@@ -742,7 +742,7 @@
                           "symbol": "left_rating"
                         },
                         "val": {
-                          "bool": false
+                          "bool": true
                         }
                       },
                       {

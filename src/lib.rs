@@ -2801,6 +2801,60 @@ impl NebulaNomadContract {
         constellation_mapper::get_constellation_count(&env)
     }
 
+    /// Name a constellation, anchor it to a region and attach lore (recorder, once).
+    pub fn annotate_constellation(
+        env: Env,
+        recorder: Address,
+        constellation_id: u64,
+        name: String,
+        anchor_region: u64,
+        lore: String,
+    ) -> Result<constellation_mapper::ConstellationMeta, ConstellationError> {
+        constellation_mapper::annotate_constellation(
+            &env,
+            &recorder,
+            constellation_id,
+            name,
+            anchor_region,
+            lore,
+        )
+    }
+
+    /// Recognize a partial or noisy star observation.
+    pub fn recognize_constellation(
+        env: Env,
+        observed: Vec<BytesN<32>>,
+    ) -> Result<constellation_mapper::Recognition, ConstellationError> {
+        constellation_mapper::recognize_pattern(&env, &observed)
+    }
+
+    /// Recognize an observation and point toward its anchor region.
+    pub fn get_navigation_aid(
+        env: Env,
+        observed: Vec<BytesN<32>>,
+        current_region: u64,
+    ) -> Result<constellation_mapper::NavigationAid, ConstellationError> {
+        constellation_mapper::navigation_aid(&env, &observed, current_region)
+    }
+
+    /// Sight a constellation for discovery bonuses and collection progress.
+    pub fn sight_constellation(
+        env: Env,
+        observer: Address,
+        observed: Vec<BytesN<32>>,
+        region_id: u64,
+    ) -> Result<constellation_mapper::SightingResult, ConstellationError> {
+        constellation_mapper::sight_constellation(&env, &observer, &observed, region_id)
+    }
+
+    /// A player's constellation collection progress.
+    pub fn get_constellation_collection(
+        env: Env,
+        player: Address,
+    ) -> constellation_mapper::CollectionProgress {
+        constellation_mapper::get_collection(&env, &player)
+    }
+
     // ─── Quantum Entanglement Comms (Issue #73) ───────────────────────────
 
     /// Establish an entanglement pair between two ships.
@@ -3082,6 +3136,46 @@ impl NebulaNomadContract {
     /// Verify wormhole link integrity.
     pub fn verify_wormhole_link(env: Env, wormhole_id: u64, provided_link: BytesN<32>) -> bool {
         wormhole_traveler::verify_wormhole_link(&env, wormhole_id, provided_link)
+    }
+
+    /// Jump through a wormhole and get the full outcome (risk, roll, exit).
+    pub fn jump_through_wormhole(
+        env: Env,
+        traveler: Address,
+        ship_id: u64,
+        wormhole_id: u64,
+    ) -> Result<wormhole_traveler::TravelOutcome, WormholeError> {
+        wormhole_traveler::jump_through_wormhole(&env, traveler, ship_id, wormhole_id)
+    }
+
+    /// Bail out back through the wormhole a ship just came through.
+    pub fn wormhole_emergency_exit(
+        env: Env,
+        traveler: Address,
+        ship_id: u64,
+    ) -> Result<wormhole_traveler::TravelOutcome, WormholeError> {
+        wormhole_traveler::emergency_exit(&env, traveler, ship_id)
+    }
+
+    /// Scan a nebula for wormholes; detected ones join the explorer's map.
+    pub fn scan_for_wormholes(env: Env, explorer: Address, nebula_id: u64) -> Vec<u64> {
+        wormhole_traveler::scan_for_wormholes(&env, explorer, nebula_id)
+    }
+
+    /// An explorer's wormhole map with live stability, risk and cost.
+    pub fn get_wormhole_map(
+        env: Env,
+        explorer: Address,
+    ) -> Vec<wormhole_traveler::WormholeMapEntry> {
+        wormhole_traveler::get_wormhole_map(&env, &explorer)
+    }
+
+    /// Open wormhole routes leaving a nebula.
+    pub fn get_wormhole_routes(
+        env: Env,
+        nebula_id: u64,
+    ) -> Vec<wormhole_traveler::WormholeMapEntry> {
+        wormhole_traveler::get_routes_from(&env, nebula_id)
     }
 
     // ─── Player Alliance and Faction System (Issue #79) ──────────────────
@@ -4323,6 +4417,137 @@ impl NebulaNomadContract {
     /// Aggregate governance staking statistics.
     pub fn get_global_staking_stats(env: Env) -> GlobalStakingStats {
         staking::get_global_staking_stats(&env)
+    }
+
+    // ─── Weather System (Issues #553, #630) ──────────────────────────────
+
+    /// Current weather in a region.
+    pub fn get_region_weather(env: Env, region_id: u64) -> weather_system::WeatherState {
+        weather_system::get_current_weather(&env, region_id)
+    }
+
+    /// 24-hour forecast for a region.
+    pub fn get_weather_forecast(env: Env, region_id: u64) -> Vec<weather_system::WeatherForecast> {
+        weather_system::generate_forecast(&env, region_id)
+    }
+
+    /// Effective weather modifiers in a region right now.
+    pub fn get_weather_effects(env: Env, region_id: u64) -> weather_system::WeatherImpact {
+        weather_system::get_weather_impact(&env, region_id)
+    }
+
+    /// Set a region's climate weights (admin only).
+    pub fn set_region_climate(
+        env: Env,
+        admin: Address,
+        region_id: u64,
+        weights: Vec<u32>,
+    ) -> Result<(), weather_system::WeatherError> {
+        weather_system::set_region_climate(&env, &admin, region_id, weights)
+    }
+
+    // ─── Player Housing (Issues #532, #629) ──────────────────────────────
+
+    /// Create a player's house (Small).
+    pub fn initialize_house(env: Env, owner: Address) -> Result<HouseInstance, HousingError> {
+        player_housing::initialize_house(&env, owner)
+    }
+
+    /// House, layout, displays, banner and storage in one read.
+    pub fn get_house_showcase(env: Env, owner: Address) -> Option<player_housing::HouseShowcase> {
+        player_housing::get_house_showcase(&env, &owner)
+    }
+
+    /// Set wall, floor and lighting themes.
+    pub fn customize_house(
+        env: Env,
+        owner: Address,
+        wall_theme: u32,
+        floor_theme: u32,
+        lighting_theme: u32,
+    ) -> Result<(), HousingError> {
+        player_housing::customize_theme(&env, owner, wall_theme, floor_theme, lighting_theme)
+    }
+
+    /// Buy furniture into storage.
+    pub fn buy_house_furniture(
+        env: Env,
+        owner: Address,
+        furniture_id: u64,
+    ) -> Result<(), HousingError> {
+        player_housing::purchase_furniture(&env, owner, furniture_id)
+    }
+
+    /// Place owned furniture.
+    pub fn place_house_furniture(
+        env: Env,
+        owner: Address,
+        furniture_id: u64,
+        x: u32,
+        y: u32,
+        rotation: u32,
+        layer: u32,
+    ) -> Result<(), HousingError> {
+        player_housing::place_furniture(&env, owner, furniture_id, x, y, rotation, layer)
+    }
+
+    /// Move placed furniture back into storage.
+    pub fn remove_house_furniture(
+        env: Env,
+        owner: Address,
+        furniture_id: u64,
+    ) -> Result<(), HousingError> {
+        player_housing::remove_furniture(&env, owner, furniture_id)
+    }
+
+    /// Buy the next storage expansion.
+    pub fn expand_house_storage(
+        env: Env,
+        owner: Address,
+    ) -> Result<player_housing::StorageSummary, HousingError> {
+        player_housing::expand_storage(&env, owner)
+    }
+
+    /// Show an unlocked achievement in a display case slot.
+    pub fn display_house_achievement(
+        env: Env,
+        owner: Address,
+        achievement_id: u64,
+        slot: u32,
+    ) -> Result<Vec<player_housing::AchievementDisplay>, HousingError> {
+        player_housing::display_achievement(&env, owner, achievement_id, slot)
+    }
+
+    /// Hang the owner's guild banner.
+    pub fn hang_guild_banner(
+        env: Env,
+        owner: Address,
+    ) -> Result<player_housing::GuildBanner, HousingError> {
+        player_housing::display_guild_banner(&env, owner)
+    }
+
+    /// Visit another player's house.
+    pub fn visit_house(
+        env: Env,
+        visitor: Address,
+        house_owner: Address,
+    ) -> Result<(), HousingError> {
+        player_housing::visit_house(&env, visitor, house_owner)
+    }
+
+    /// Rate a visited house (100-500).
+    pub fn rate_house(
+        env: Env,
+        visitor: Address,
+        house_owner: Address,
+        rating: u32,
+    ) -> Result<(), HousingError> {
+        player_housing::rate_house(&env, visitor, house_owner, rating)
+    }
+
+    /// Add a guest to a friends-only house.
+    pub fn add_house_guest(env: Env, owner: Address, guest: Address) -> Result<(), HousingError> {
+        player_housing::add_guest(&env, owner, guest)
     }
 }
 
