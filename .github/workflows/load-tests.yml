@@ -50,7 +50,7 @@ jobs:
       - name: Comment results on PR
         if: always() && github.event_name == 'pull_request'
         continue-on-error: true
-        uses: marocchino/sticky-pull-request-comment@v2
+        uses: marocchino/sticky-pull-request-comment@v3
         with:
           header: k6-load-tests
           path: tests/load/summary.md
