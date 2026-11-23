@@ -61,7 +61,7 @@ jobs:
         run: npm ci
 
       - name: Download Storybook
-        uses: actions/download-artifact@v7
+        uses: actions/download-artifact@v8
         with:
           name: storybook-build
           path: frontend/storybook-static
@@ -99,7 +99,7 @@ jobs:
         run: npm ci
 
       - name: Download Storybook
-        uses: actions/download-artifact@v7
+        uses: actions/download-artifact@v8
         with:
           name: storybook-build
           path: frontend/storybook-static
@@ -135,7 +135,7 @@ jobs:
         run: npm ci
 
       - name: Download Storybook
-        uses: actions/download-artifact@v7
+        uses: actions/download-artifact@v8
         with:
           name: storybook-build
           path: frontend/storybook-static
@@ -161,7 +161,7 @@ jobs:
     continue-on-error: true
     steps:
       - name: Download visual regression report
-        uses: actions/download-artifact@v7
+        uses: actions/download-artifact@v8
         with:
           name: visual-regression-report
           path: visual-regression-results
