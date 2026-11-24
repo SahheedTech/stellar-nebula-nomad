@@ -42,7 +42,7 @@ jobs:
             k6 run -q "$s.js" | tee -a summary.md
             echo '```' >> summary.md
           done
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         if: always()
         with:
           name: k6-reports
